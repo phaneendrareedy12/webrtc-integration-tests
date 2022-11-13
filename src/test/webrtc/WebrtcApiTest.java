@@ -8,6 +8,7 @@ import org.testng.annotations.Test;
 import util.RestAssuredUtil;
 import util.TestUtil;
 
+import java.util.LinkedHashMap;
 import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
@@ -68,5 +69,20 @@ public class WebrtcApiTest{
         Assert.assertEquals(Optional.ofNullable((Integer) jp.get("statusCode")), Optional.of(404));
         Assert.assertEquals(jp.get("message"), "No device found with the given device id");
         Assert.assertEquals(jp.get("details"), "uri=/webrtc/audit/device/someramdomIvalidId");
+    }
+
+    @Test
+    public void T03_WebRtcGetAddDeviceTest() {
+        res = given()
+                .contentType(ContentType.JSON)
+                .body("{}")
+                .post("/device");
+        Assert.assertEquals(res.getStatusCode(), 400, "Status Check Failed!");
+        jp = RestAssuredUtil.getJsonPath(res);
+        System.out.println(testUtil.getErrorResponse(jp));
+        LinkedHashMap<String, String> validationErrors = jp.get("validationErrors");
+        Assert.assertEquals(validationErrors.get("deviceDetails"), "Device details are mandatory.");
+        Assert.assertEquals(validationErrors.get("deviceId"), "Device Id is mandatory.");
+        Assert.assertEquals(jp.get("details"), "uri=/webrtc/device");
     }
 }
